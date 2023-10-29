@@ -1,3 +1,8 @@
+// Warda Sajjad
+// 21I-1240
+// Assignment 2
+// Section A
+
 package main
 
 import (
@@ -28,6 +33,12 @@ func (bc *Blockchain) GetLatestBlock() Block {
 	return bc.Blocks[len(bc.Blocks)-1]
 }
 
+func (bc *Blockchain) setBlockHashRangeForBlockCreation(min, max string) {
+	// Set the hash range for block creation
+	bc.BlockHashMin = min
+	bc.BlockHashMax = max
+}
+
 func (bc *Blockchain) NewBlock(transactions []string) {
 	if len(transactions) == 0 {
 		fmt.Println("No transactions to add to the block.")
@@ -41,19 +52,25 @@ func (bc *Blockchain) NewBlock(transactions []string) {
 		nonce := FindValidNonce(merkleRoot, previousHash)
 		currentHash := CreateHash(transactions, nonce, previousHash, merkleRoot)
 
-		block := Block{
-			Transaction:  transactions,
-			Nonce:        nonce,
-			PreviousHash: previousHash,
-			CurrentHash:  currentHash,
-			MerkleRoot:   merkleRoot,
-		}
+		// Check if the currentHash falls within the specified hash range
+		if currentHash >= bc.BlockHashMin && currentHash <= bc.BlockHashMax {
+			block := Block{
+				Transaction:  transactions,
+				Nonce:        nonce,
+				PreviousHash: previousHash,
+				CurrentHash:  currentHash,
+				MerkleRoot:   merkleRoot,
+			}
 
-		bc.Blocks = append(bc.Blocks, block)
+			bc.Blocks = append(bc.Blocks, block)
+		} else {
+			fmt.Println("Block hash is outside the specified range. Block creation failed.")
+		}
 	} else {
 		fmt.Println("Waiting for more transactions to reach the specified number.")
 	}
 }
+
 
 func CreateMerkleRoot(transactions []string) string {
 	if len(transactions) == 0 {
@@ -156,11 +173,7 @@ func (bc *Blockchain) setNumberOfTransactionsPerBlock(numTransactions int) {
 	}
 }
 
-func (bc *Blockchain) setBlockHashRangeForBlockCreation(min, max string) {
-	// You can add input validation here to ensure min and max are valid hash values.
-	bc.BlockHashMin = min
-	bc.BlockHashMax = max
-}
+
 
 func main() {
 	blockchain := &Blockchain{
@@ -168,7 +181,7 @@ func main() {
 		NumTransactionsPerBlock: 5, // Default value, can be changed using setNumberOfTransactionsPerBlock
 	}
 
-	blockchain.setBlockHashRangeForBlockCreation("0000", "00000") // Set your desired hash range
+	blockchain.setBlockHashRangeForBlockCreation("000000", "999999") // A wide range for testing
 
 	var choice int
 	for {
